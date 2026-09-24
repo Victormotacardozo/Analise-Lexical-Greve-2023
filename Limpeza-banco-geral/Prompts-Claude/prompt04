@@ -1,0 +1,575 @@
+Quero que você desenvolva um código Python para executar no **Google Colab** que transforme minha planilha Excel já limpa em um **corpus textual estruturado e pronto para importação no IRaMuTeQ**.
+
+## 1. Contexto
+
+Estou realizando uma pesquisa acadêmica em Ciências Sociais sobre a greve estudantil de 2023 na Universidade de São Paulo.
+
+Minha base de dados já passou pela etapa de limpeza textual. Portanto, **NÃO quero que o código faça uma nova limpeza do conteúdo textual**.
+
+A planilha já possui uma coluna chamada:
+
+`Texto para Análise`
+
+Essa é a coluna que deve ser utilizada como texto do corpus do IRaMuTeQ.
+
+A base possui atualmente **181 unidades de análise**.
+
+As principais colunas são:
+
+* `ID`
+* `Data`
+* `Ator`
+* `Grupo do Ator`
+* `Transcrição Integral da Publicação`
+* `Texto para Análise`
+
+A imagem/estrutura da planilha é semelhante a:
+
+| ID | Data       | Ator | Grupo do Ator        | Transcrição Integral da Publicação | Texto para Análise |
+| -- | ---------- | ---- | -------------------- | ---------------------------------- | ------------------ |
+| 1  | 14/09/2023 | DCE  | Movimento estudantil | texto original...                  | texto limpo...     |
+| 2  | 16/09/2023 | DCE  | Movimento estudantil | texto original...                  | texto limpo...     |
+| 3  | 18/09/2023 | DCE  | Movimento estudantil | texto original...                  | texto limpo...     |
+
+O objetivo agora é transformar essa base em um arquivo `.txt` estruturado no formato aceito pelo IRaMuTeQ.
+
+---
+
+# 2. O que o código deve fazer
+
+O notebook deve permitir que eu faça upload da minha **planilha Excel ****`.xlsx`** diretamente no Google Colab.
+
+Depois do upload, o código deve:
+
+1. carregar a planilha;
+2. identificar a aba `Texto Completo`;
+3. verificar se as colunas necessárias existem;
+4. mostrar quantas unidades de análise foram encontradas;
+5. preservar o dataframe original sem alterações;
+6. criar uma cópia chamada `df_iramuteq`;
+7. adicionar à cópia uma nova coluna chamada:
+
+`Texto IRaMuTeQ`
+
+8. preencher essa coluna com o texto da coluna `Texto para Análise`, sem modificar o conteúdo textual;
+9. criar automaticamente os metadados necessários para o IRaMuTeQ;
+10. gerar o corpus `.txt`;
+11. salvar o `.txt` explicitamente em **UTF-8**;
+12. gerar também uma nova planilha `.xlsx` contendo a coluna `Texto IRaMuTeQ`;
+13. disponibilizar os dois arquivos para download no Google Colab.
+
+O arquivo Excel original **não pode ser sobrescrito**.
+
+---
+
+# 3. MUITO IMPORTANTE: não fazer nova limpeza
+
+A coluna `Texto para Análise` já contém o texto limpo.
+
+Portanto, NÃO faça:
+
+* nova remoção de pontuação;
+* nova remoção de acentos;
+* remoção de `ç`;
+* remoção de stopwords;
+* lematização;
+* stemming;
+* correção gramatical;
+* correção de transcrição;
+* substituição de palavras;
+* substituição de sinônimos;
+* remoção de repetições;
+* alteração semântica;
+* resumo;
+* normalização linguística adicional.
+
+O conteúdo da coluna `Texto para Análise` deve ser tratado como **texto final para análise lexical**.
+
+O código deve simplesmente copiar esse conteúdo para `Texto IRaMuTeQ`.
+
+---
+
+# 4. Estrutura do corpus para o IRaMuTeQ
+
+Quero que o arquivo `.txt` final seja estruturado com uma unidade de análise por bloco.
+
+Utilize o padrão:
+
+`**** *id_1 *ator_DCE *grupo_movimento_estudantil`
+
+seguido pelo texto correspondente.
+
+Depois:
+
+`**** *id_2 *ator_DCE *grupo_movimento_estudantil`
+
+seguido pelo texto correspondente.
+
+E assim sucessivamente.
+
+Exemplo:
+
+```text
+**** *id_1 *ator_DCE *grupo_movimento_estudantil
+diversos centros acadêmicos e unidades da usp estão se organizando nesses próximos dias para paralisar a universidade dia 21 na próxima quinta feira e discutir uma greve a partir desse dia...
+
+**** *id_2 *ator_DCE *grupo_movimento_estudantil
+agora é greve é hora de radicalizar nossa luta...
+
+**** *id_3 *ator_DCE *grupo_movimento_estudantil
+é greve pela contratação de mais docentes...
+```
+
+Cada unidade deve começar com uma linha de identificação `****`.
+
+---
+
+# 5. Metadados
+
+Quero preservar pelo menos estas três informações como variáveis do IRaMuTeQ:
+
+* `ID`
+* `Ator`
+* `Grupo do Ator`
+
+Use o seguinte padrão:
+
+`*id_1`
+`*ator_DCE`
+`*grupo_movimento_estudantil`
+
+Por exemplo:
+
+```text
+**** *id_1 *ator_DCE *grupo_movimento_estudantil
+texto da unidade
+```
+
+---
+
+# 6. Tratamento dos valores dos metadados
+
+Como os metadados do IRaMuTeQ não devem conter espaços, transforme os valores das variáveis em identificadores seguros **sem alterar o significado das categorias**.
+
+Por exemplo:
+
+`Movimento estudantil`
+
+deve virar:
+
+`movimento_estudantil`
+
+e:
+
+`Reitoria`
+
+deve virar:
+
+`reitoria`
+
+Não altere a categoria substantivamente.
+
+Faça o mesmo para os atores.
+
+Por exemplo:
+
+`DCE` → `DCE`
+
+`Juntos` → `Juntos`
+
+`Correnteza` → `Correnteza`
+
+`UJC` → `UJC`
+
+`Reitoria` → `Reitoria`
+
+`Instituto` → `Instituto`
+
+Apenas faça as adaptações técnicas necessárias para que sejam utilizados como metadados.
+
+---
+
+# 7. Sobre a coluna Data
+
+Não é obrigatório utilizar `Data` como variável do IRaMuTeQ nesta primeira versão.
+
+Por enquanto, priorize:
+
+* ID
+* Ator
+* Grupo do Ator
+
+Entretanto, preserve a coluna `Data` na planilha final.
+
+Se você considerar metodologicamente útil incluir a data como variável do IRaMuTeQ, explique antes e implemente de forma segura, por exemplo:
+
+`*data_20230914`
+
+Mas não faça isso se houver risco de problemas de interpretação pelo IRaMuTeQ.
+
+---
+
+# 8. As 180 unidades devem ser preservadas
+
+É fundamental que o código:
+
+* não altere a ordem das unidades;
+* não altere os IDs;
+* não duplique unidades;
+* não exclua unidades;
+* não misture textos de unidades diferentes;
+* não crie textos artificiais.
+
+Se houver uma unidade com `Texto para Análise` vazio, ela deve permanecer identificável na planilha.
+
+Porém, quero que você explique como o IRaMuTeQ tratará uma unidade sem conteúdo textual.
+
+Não invente nenhum texto para preencher células vazias.
+
+---
+
+# 9. Controle de correspondência
+
+Quero que o código faça uma verificação automática antes de gerar o `.txt`.
+
+Ele deve verificar:
+
+* número de linhas da base;
+* número de IDs;
+* existência de IDs duplicados;
+* quantidade de textos vazios;
+* quantidade de textos não vazios;
+* quantidade de blocos que serão gerados no `.txt`.
+
+O código deve emitir uma mensagem semelhante a:
+
+```text
+Unidades na base: 181
+IDs únicos: 181
+Textos preenchidos: XXX
+Textos vazios: XXX
+Unidades que serão exportadas para o corpus: XXX
+```
+
+Se houver alguma inconsistência, o código deve **parar e avisar**, em vez de gerar silenciosamente um corpus incorreto.
+
+---
+
+# 10. Verificação dos metadados
+
+Antes de gerar o arquivo, mostre uma pequena amostra, por exemplo as 5 primeiras unidades, no seguinte formato:
+
+```text
+**** *id_1 *ator_DCE *grupo_movimento_estudantil
+texto...
+
+**** *id_2 *ator_DCE *grupo_movimento_estudantil
+texto...
+```
+
+Assim poderei verificar visualmente se a estrutura está correta.
+
+---
+
+# 11. Codificação
+
+Esse ponto é FUNDAMENTAL.
+
+O arquivo final deve ser salvo explicitamente em:
+
+**UTF-8**
+
+Não remover:
+
+* `ç`
+* `ã`
+* `õ`
+* `á`
+* `à`
+* `â`
+* `é`
+* `ê`
+* `í`
+* `ó`
+* `ô`
+* `ú`
+* `ü`
+
+O código deve fazer uma verificação final procurando caracteres problemáticos como:
+
+`�`
+
+e informar se encontrou algum.
+
+Também quero uma verificação explícita de exemplos como:
+
+```text
+ç
+ã
+é
+ô
+```
+
+para garantir que foram preservados.
+
+---
+
+# 12. Arquivo Excel de saída
+
+Quero que o código gere uma nova planilha, sem alterar a original.
+
+Nome sugerido:
+
+`Banco_greve_USP_2023_IRaMuTeQ.xlsx`
+
+Ela deve conter todas as colunas originais e uma nova coluna:
+
+`Texto IRaMuTeQ`
+
+Essa coluna deve conter exatamente o texto da coluna `Texto para Análise`.
+
+Não quero que a planilha original seja modificada.
+
+---
+
+# 13. Arquivo TXT de saída
+
+O arquivo final deve se chamar:
+
+`Corpus_greve_USP_2023_IRaMuTeQ.txt`
+
+Ele deve conter exclusivamente o corpus estruturado para o IRaMuTeQ.
+
+Estrutura:
+
+```text
+**** *id_1 *ator_DCE *grupo_movimento_estudantil
+texto da unidade 1
+
+**** *id_2 *ator_DCE *grupo_movimento_estudantil
+texto da unidade 2
+
+**** *id_3 *ator_Juntos *grupo_movimento_estudantil
+texto da unidade 3
+```
+
+Cada unidade deve ser separada da seguinte por uma linha em branco.
+
+Não colocar tabelas, aspas ou qualquer outro elemento no arquivo final.
+
+---
+
+# 14. Relatório de validação
+
+Além dos arquivos de saída, quero que o notebook mostre um relatório final com:
+
+* arquivo original utilizado;
+* aba utilizada;
+* número total de unidades;
+* número de IDs únicos;
+* número de IDs duplicados;
+* número de textos preenchidos;
+* número de textos vazios;
+* número de unidades exportadas;
+* atores encontrados;
+* grupos encontrados;
+* número de blocos gerados no TXT;
+* confirmação de que o arquivo foi salvo em UTF-8;
+* confirmação de que `ç` e acentos foram preservados.
+
+Idealmente, faça uma verificação automática:
+
+```text
+Número de unidades na base = número de blocos no TXT
+```
+
+Se os números forem diferentes, o programa deve emitir um alerta.
+
+---
+
+# 15. Não utilizar a coluna "Transcrição Integral da Publicação"
+
+Para gerar o corpus do IRaMuTeQ, utilize **somente**:
+
+`Texto para Análise`
+
+A coluna:
+
+`Transcrição Integral da Publicação`
+
+deve permanecer na planilha de saída apenas como registro do corpus original, mas não deve ser utilizada para gerar o texto do IRaMuTeQ.
+
+---
+
+# 16. Estrutura do notebook
+
+Organize o código em células claras:
+
+### Célula 1
+
+Importação das bibliotecas.
+
+### Célula 2
+
+Upload do arquivo Excel.
+
+### Célula 3
+
+Identificação da aba `Texto Completo` e das colunas.
+
+### Célula 4
+
+Criação de `df_iramuteq`.
+
+### Célula 5
+
+Validação da base.
+
+### Célula 6
+
+Criação dos metadados do IRaMuTeQ.
+
+### Célula 7
+
+Criação da coluna `Texto IRaMuTeQ`.
+
+### Célula 8
+
+Geração e visualização das 5 primeiras unidades no formato IRaMuTeQ.
+
+### Célula 9
+
+Geração do arquivo `.txt` em UTF-8.
+
+### Célula 10
+
+Geração da nova planilha `.xlsx`.
+
+### Célula 11
+
+Relatório final de validação.
+
+### Célula 12
+
+Download dos dois arquivos.
+
+Quero poder executar todas as células de cima para baixo sem precisar editar manualmente o código.
+
+---
+
+# 17. Bibliotecas
+
+Utilize preferencialmente apenas bibliotecas disponíveis no Google Colab:
+
+* `pandas`
+* `re`
+* `os`
+* `collections`
+* `google.colab.files`
+* `openpyxl`, caso necessário para salvar o Excel.
+
+Não instale bibliotecas externas sem necessidade.
+
+---
+
+# 18. IMPORTANTE: não gerar o arquivo final silenciosamente
+
+Antes de criar o `.txt`, mostre:
+
+1. quantidade de unidades;
+2. quantidade de textos preenchidos;
+3. quantidade de textos vazios;
+4. quantidade de IDs duplicados;
+5. amostra das primeiras 5 unidades no formato IRaMuTeQ.
+
+Somente depois gere o arquivo.
+
+---
+
+# 19. Relação entre o Excel e o TXT
+
+Quero que o código mantenha uma correspondência perfeitamente rastreável:
+
+**ID da planilha → ID do IRaMuTeQ → texto da unidade**
+
+Por exemplo:
+
+```text
+Planilha:
+ID = 37
+
+↓ 
+
+IRaMuTeQ:
+**** *id_37 *ator_Correnteza *grupo_movimento_estudantil
+
+↓
+
+Texto:
+conteúdo da célula Texto para Análise correspondente ao ID 37
+```
+
+Essa correspondência é essencial para que eu possa retornar posteriormente do resultado quantitativo do IRaMuTeQ para o documento original.
+
+---
+
+# 20. Depois da geração do TXT
+
+No final do notebook, explique claramente:
+
+> O arquivo `Corpus_greve_USP_2023_IRaMuTeQ.txt` foi salvo em UTF-8 e está pronto para ser importado no IRaMuTeQ.
+
+Explique também que, ao abrir/importar o corpus no IRaMuTeQ, devo selecionar:
+
+**UTF-8 / UTF-8 all languages**
+
+Não altere a codificação para ASCII, ANSI ou outra opção.
+
+---
+
+# 21. Objetivo metodológico
+
+O objetivo desse código é somente:
+
+**pegar a base já limpa → preservar suas unidades e variáveis → estruturar os metadados → gerar o corpus textual no formato do IRaMuTeQ.**
+
+Não quero que o código faça qualquer nova intervenção semântica.
+
+A arquitetura deve ser:
+
+```text
+BANCO ORIGINAL
+       ↓
+BANCO LIMPO
+       ↓
+df_iramuteq
+       ↓
+coluna "Texto IRaMuTeQ"
+       ↓
+metadados
+       ↓
+Corpus_greve_USP_2023_IRaMuTeQ.txt
+       ↓
+IRaMuTeQ
+       ↓
+UTF-8 / UTF-8 all languages
+```
+
+## O que quero que você entregue
+
+1. Código completo para Google Colab.
+2. Código dividido em células.
+3. Explicação breve de cada célula.
+4. Upload da planilha `.xlsx`.
+5. Leitura da aba `Texto Completo`.
+6. Validação das 181 unidades.
+7. Criação da coluna `Texto IRaMuTeQ`.
+8. Criação dos metadados `ID`, `Ator` e `Grupo do Ator`.
+9. Geração do `.txt` estruturado.
+10. Salvamento em UTF-8.
+11. Geração da nova planilha `.xlsx`.
+12. Relatório de validação.
+13. Download dos arquivos.
+14. Verificação explícita da preservação de `ç` e dos acentos portugueses.
+
+**Antes de executar qualquer código, apresente o código completo e explique como ele garante que nenhuma unidade ou conteúdo textual será perdido.**
