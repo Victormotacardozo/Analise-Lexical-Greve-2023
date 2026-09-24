@@ -1,0 +1,6 @@
+notei alguns pontos que precisam ser revistos:
+
+Foram encontrados somente 22 separadores técnicos 'audio' (esse número não está correto) e nenhum separador técnico 'legenda' (isso não está correto); Logo esses separadores permanecem no cospus limpo e isso não pode acontecer
+o caractere '|' também não foi removido e ele não oferece valor analítico, portanto deve ser removido
+existem ainda também quebras no texto, isso não deve acontecer, o texto final deve ser corrido
+corrija o código para que esses pontos sejam atendidos e eu possa fazer a limpeza do texto novamente
