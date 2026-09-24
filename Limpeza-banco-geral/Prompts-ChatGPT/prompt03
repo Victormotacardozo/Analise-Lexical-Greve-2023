@@ -1,0 +1,1 @@
+Agora tenho o banco limpo já na planilha, não em .txt. Faça um prompt para eu utilizar no claude, pedindo para ele criar um código que rode no google colab para eu enviar a planilha para ele, ele adicionar uma coluna com o texto pronto e formatado como necessário (com metadados) para o Iramuteq e depois dê o banco já em .txt 
