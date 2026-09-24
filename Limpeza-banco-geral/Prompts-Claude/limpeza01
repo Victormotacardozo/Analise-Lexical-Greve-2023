@@ -1,0 +1,608 @@
+Quero que você desenvolva um código Python para executar no Google Colab, destinado à **limpeza técnica e padronização de um corpus textual de uma pesquisa acadêmica em Ciências Sociais**, que posteriormente será analisado no software IRaMuTeQ.
+
+## 1. Contexto da pesquisa
+
+O corpus é composto por publicações relacionadas à greve estudantil de 2023 na Universidade de São Paulo (USP). Cada unidade de análise corresponde a uma publicação/documento, podendo conter:
+
+* texto de legenda de publicação;
+* transcrição de áudio de vídeo;
+* carta aberta;
+* nota;
+* ata;
+* comunicado;
+* outros materiais textuais.
+
+O corpus original possui **181 unidades de análise**. Destas, **3 unidades não possuem texto transcrito**, pois correspondem a Instagram Lives longas cujo áudio apresentou problemas técnicos e não pôde ser transcrito adequadamente. Essas 3 unidades devem **permanecer na base de dados original**, mas não produzirão material textual para a análise lexical.
+
+Portanto, o código de limpeza NÃO deve tentar criar texto artificial para essas unidades.
+
+O corpus textual será utilizado para:
+
+1. análise lexical clássica, com contagem de palavras;
+2. análise de similitude;
+3. posteriormente, outras análises textuais no IRaMuTeQ.
+
+A pesquisa busca identificar padrões discursivos e enquadramentos mobilizados pelos diferentes atores durante a greve. Por isso, **não quero que a limpeza altere o conteúdo discursivamente relevante do corpus**.
+
+O princípio geral deve ser:
+
+> **Remover ruído técnico e de formatação, preservando integralmente a informação discursivamente relevante.**
+
+---
+
+# 2. Regra metodológica fundamental
+
+O código deve fazer apenas **limpeza técnica**, e NÃO uma edição linguística ou uma reescrita dos textos.
+
+Não deve:
+
+* corrigir gramática;
+* corrigir estilo;
+* substituir palavras por sinônimos;
+* transformar linguagem oral em linguagem escrita formal;
+* resumir textos;
+* remover repetições;
+* remover palavras consideradas "irrelevantes" pelo modelo;
+* remover palavras políticas;
+* remover negações como "não", "nunca", "sem";
+* substituir "greve" por "paralisação", ou vice-versa;
+* transformar diferentes formas de nomear um fenômeno em uma única categoria sem justificativa metodológica;
+* fazer stemming;
+* lematizar;
+* remover stopwords nesta primeira etapa.
+
+Isso é importante porque diferenças lexicais podem ser empiricamente relevantes para a pesquisa.
+
+---
+
+# 3. Entrada do código
+
+Quero que o código permita que eu faça upload de **um arquivo ****`.txt`**** contendo o corpus completo** diretamente pelo Google Colab.
+
+O código deve:
+
+1. abrir uma janela para upload;
+2. permitir selecionar o arquivo `.txt`;
+3. ler o arquivo;
+4. informar qual arquivo foi carregado;
+5. verificar a codificação, priorizando **UTF-8**;
+6. realizar a limpeza;
+7. gerar um novo arquivo `.txt` contendo o corpus limpo;
+8. disponibilizar o arquivo limpo para download.
+
+O arquivo original nunca deve ser sobrescrito.
+
+O resultado deve ser salvo, por exemplo, como:
+
+`corpus_greve_USP_2023_limpo.txt`
+
+---
+
+# 4. Codificação
+
+O corpus está em português.
+
+É FUNDAMENTAL preservar corretamente:
+
+* ç
+* ã
+* õ
+* á
+* à
+* â
+* é
+* ê
+* í
+* ó
+* ô
+* ú
+* ü
+
+**Não remova caracteres acentuados nem substitua ****`ç`**** por ****`c`****.**
+
+O fato de um caractere não pertencer ao conjunto ASCII não significa que ele deva ser removido.
+
+O arquivo final deve ser salvo explicitamente em **UTF-8**.
+
+Também quero que o código faça uma verificação básica de caracteres problemáticos de codificação, como `�`, informando quantos foram encontrados.
+
+---
+
+# 5. Elementos que DEVEM ser removidos
+
+A limpeza deve remover apenas elementos técnicos ou de formatação que não possuem valor analítico direto.
+
+## 5.1 Emojis
+
+Remover emojis.
+
+Exemplo:
+
+`A greve continua! ✊🔥`
+
+deve se tornar aproximadamente:
+
+`A greve continua`
+
+Mas o texto e as palavras devem permanecer.
+
+---
+
+## 5.2 URLs
+
+Remover URLs completas.
+
+Exemplo:
+
+`https://www.exemplo.com.br/documento`
+
+deve ser removido.
+
+Não substituir a URL por palavras inventadas.
+
+---
+
+## 5.3 Marcadores técnicos "audio:" e "legenda:"
+
+No corpus existem marcadores utilizados para indicar a origem do conteúdo, como:
+
+`audio:`
+
+`legenda:`
+
+Esses marcadores são apenas informações técnicas utilizadas durante a construção da base.
+
+Devem ser removidos.
+
+Porém, **o conteúdo que vem depois deles deve permanecer integralmente**.
+
+Exemplo:
+
+`audio: nós vamos continuar a mobilização`
+
+deve se tornar:
+
+`nós vamos continuar a mobilização`
+
+Não remover o conteúdo do áudio.
+
+O mesmo vale para `legenda:`.
+
+IMPORTANTE: faça isso apenas quando "audio:" ou "legenda:" estiverem sendo utilizados como marcadores técnicos, e não quando fizerem parte de uma frase legítima.
+
+---
+
+# 6. Hashtags
+
+As hashtags devem ser tratadas com cuidado porque podem conter informação discursivamente relevante.
+
+NÃO simplesmente apagar a hashtag inteira.
+
+Exemplo:
+
+`#GreveUSP`
+
+deve preservar o conteúdo sem o símbolo `#`, ficando aproximadamente:
+
+`GreveUSP`
+
+Se for possível separar de maneira segura palavras concatenadas, pode-se fazer isso.
+
+Exemplo:
+
+`#ContrataçõesJá`
+
+→
+
+`Contratações Já`
+
+Exemplo:
+
+`#Dia21AUSPVaiParar`
+
+→
+
+`Dia 21 A USP Vai Parar`
+
+PORÉM:
+
+Não utilize algoritmos agressivos de segmentação que possam inventar palavras ou alterar o significado.
+
+Se não for possível determinar com segurança onde ocorre a separação, preserve a hashtag sem o `#`.
+
+O princípio é:
+
+> preservar o conteúdo lexical da hashtag e remover apenas o marcador técnico `#`.
+
+---
+
+# 7. Menções (@)
+
+Existem algumas menções a usuários/perfis.
+
+Não quero que todas sejam automaticamente eliminadas.
+
+A regra deve ser:
+
+* remover o símbolo `@`;
+* preservar o nome do usuário quando ele puder possuir relevância analítica;
+* evitar que nomes de usuários sejam transformados em lixo textual.
+
+Como existem poucas ocorrências, quero que o código **identifique e contabilize as menções encontradas**, de preferência gerando um pequeno relatório para que eu possa revisá-las manualmente.
+
+Exemplo:
+
+`@DCEUSP`
+
+pode se tornar:
+
+`DCEUSP`
+
+Mas não quero que o código tente decidir sozinho que determinada menção é ou não analiticamente relevante.
+
+---
+
+# 8. Pontuação
+
+Remover pontuação comum para facilitar a análise lexical.
+
+Exemplos de elementos que podem ser removidos:
+
+* `.`
+* `,`
+* `!`
+* `?`
+* `:`
+* `;`
+* `(`
+* `)`
+* `[`
+* `]`
+* `{`
+* `}`
+* aspas
+* apóstrofos
+* outros sinais de pontuação comuns.
+
+Quando a remoção de um símbolo puder juntar duas palavras, substituí-lo por espaço.
+
+Exemplo:
+
+`greve-estudantil`
+
+deve se tornar:
+
+`greve estudantil`
+
+e não:
+
+`greveestudantil`
+
+---
+
+# 9. Asterisco
+
+Remover `*` **quando ele aparecer dentro do conteúdo textual como ruído de formatação**.
+
+ATENÇÃO:
+
+Se o arquivo já estiver estruturado no formato específico do IRaMuTeQ, os asteriscos podem fazer parte dos metadados das unidades de análise, por exemplo:
+
+`**** *id_001 *ator_DCE`
+
+Nesse caso, NÃO remover os asteriscos dos metadados.
+
+Por isso, antes de escrever o código definitivo, considere a possibilidade de o arquivo de entrada conter ou não cabeçalhos/metadados do IRaMuTeQ.
+
+Se o código não puder lidar com os dois formatos com segurança, prefiro que ele detecte o formato e informe ao usuário qual formato foi encontrado.
+
+---
+
+# 10. Aspas e apóstrofos
+
+Remover:
+
+* `" "`
+* `' '`
+* `“ ”`
+* `‘ ’`
+
+sem remover as palavras que estavam dentro delas.
+
+Exemplo:
+
+`"A greve continua"`
+
+→
+
+`A greve continua`
+
+---
+
+# 11. Hífens
+
+Remover hífens utilizados como pontuação/formatação.
+
+Quando o hífen separar palavras, substituí-lo por espaço para não juntar os termos.
+
+Exemplo:
+
+`movimento-estudantil`
+
+→
+
+`movimento estudantil`
+
+---
+
+# 12. Letras maiúsculas e minúsculas
+
+Converter todo o corpus para **minúsculas**.
+
+Exemplo:
+
+`GREVE ESTUDANTIL`
+
+→
+
+`greve estudantil`
+
+Isso deve evitar que o IRaMuTeQ trate formas maiúsculas e minúsculas como ocorrências distintas.
+
+---
+
+# 13. Espaços
+
+Normalizar espaços:
+
+* remover espaços duplicados;
+* remover espaços no início e no final das linhas;
+* evitar sequências excessivas de espaços.
+
+Não alterar a ordem das palavras.
+
+---
+
+# 14. Palavras que NÃO devem ser removidas
+
+Não remover automaticamente palavras por serem consideradas:
+
+* muito frequentes;
+* pouco informativas;
+* stopwords;
+* palavras funcionais;
+* palavras políticas;
+* palavras negativas.
+
+Por exemplo, preservar:
+
+`não`
+
+`nunca`
+
+`sem`
+
+`contra`
+
+`para`
+
+`com`
+
+`greve`
+
+`reitoria`
+
+`estudantes`
+
+`universidade`
+
+`movimento`
+
+etc.
+
+A remoção de stopwords será uma decisão analítica posterior, se necessária, e não faz parte desta etapa de limpeza.
+
+---
+
+# 15. Preservação das unidades de análise
+
+O código deve ser extremamente cuidadoso para **não juntar diferentes unidades de análise**.
+
+Cada publicação/documento deve continuar sendo identificável separadamente.
+
+Se o arquivo de entrada já possuir identificadores ou cabeçalhos das unidades, eles devem ser preservados.
+
+Não reorganizar a ordem das unidades.
+
+Não eliminar unidades.
+
+Não duplicar unidades.
+
+Não alterar os IDs.
+
+Não criar novos textos.
+
+---
+
+# 16. Relatório de auditoria
+
+Além do arquivo limpo, quero que o código gere um pequeno **relatório de auditoria da limpeza**, preferencialmente em `.txt` ou `.csv`.
+
+Esse relatório deve informar:
+
+* nome do arquivo original;
+* nome do arquivo final;
+* número de unidades encontradas, quando for possível identificar;
+* número de unidades vazias;
+* quantidade de URLs removidas;
+* quantidade de hashtags encontradas;
+* quantidade de hashtags processadas;
+* quantidade de menções encontradas;
+* quantidade de emojis/símbolos removidos;
+* quantidade de marcadores `audio:` removidos;
+* quantidade de marcadores `legenda:` removidos;
+* quantidade de caracteres problemáticos de codificação encontrados;
+* quantidade de ocorrências de `*`, aspas, apóstrofos e hífens removidas;
+* número de linhas antes e depois da limpeza.
+
+O relatório deve servir como **registro metodológico e de rastreabilidade** da transformação do corpus.
+
+Não quero apenas o arquivo final. Quero conseguir documentar exatamente o que o código fez.
+
+---
+
+# 17. Importante: não apagar informação sem registro
+
+Sempre que possível, o código deve contabilizar aquilo que removeu.
+
+Por exemplo:
+
+Antes:
+
+`texto com emoji ✊ e URL https://exemplo.com`
+
+Depois:
+
+`texto com emoji e URL`
+
+O relatório deve registrar que:
+
+* 1 emoji foi removido;
+* 1 URL foi removida.
+
+Não é necessário guardar uma cópia de cada alteração individual, mas o código deve produzir estatísticas suficientes para tornar o procedimento auditável.
+
+---
+
+# 18. Estrutura do notebook
+
+Organize o código do Google Colab em células bem separadas e explique brevemente cada uma.
+
+Sugestão:
+
+### Célula 1
+
+Importação das bibliotecas.
+
+### Célula 2
+
+Upload do arquivo `.txt`.
+
+### Célula 3
+
+Detecção/verificação da codificação.
+
+### Célula 4
+
+Funções de limpeza.
+
+### Célula 5
+
+Aplicação da limpeza.
+
+### Célula 6
+
+Geração das estatísticas de auditoria.
+
+### Célula 7
+
+Salvamento do corpus limpo em UTF-8.
+
+### Célula 8
+
+Geração do relatório.
+
+### Célula 9
+
+Download dos arquivos.
+
+Quero que seja possível executar o notebook de cima para baixo sem precisar editar manualmente o código.
+
+---
+
+# 19. Bibliotecas
+
+Prefira utilizar apenas bibliotecas disponíveis normalmente no Google Colab, como:
+
+* `re`
+* `unicodedata`
+* `collections`
+* `os`
+* `pandas`
+* `google.colab.files`
+
+Evite instalar bibliotecas externas desnecessariamente.
+
+Se alguma biblioteca adicional for realmente necessária, explique por quê antes de utilizá-la.
+
+---
+
+# 20. Muito importante: teste de segurança
+
+Antes de me entregar o código definitivo, faça uma análise dos possíveis riscos do procedimento.
+
+Quero que você verifique especialmente:
+
+1. se `ç` e os acentos portugueses serão preservados;
+2. se palavras separadas por hífen não serão indevidamente concatenadas;
+3. se URLs serão removidas sem apagar palavras próximas;
+4. se hashtags terão seu conteúdo preservado;
+5. se menções não serão apagadas automaticamente;
+6. se `audio:` e `legenda:` serão removidos sem apagar seus conteúdos;
+7. se os IDs das unidades serão preservados;
+8. se os asteriscos dos metadados do IRaMuTeQ serão preservados caso existam;
+9. se as 3 unidades sem transcrição permanecerão identificáveis;
+10. se o arquivo final será realmente UTF-8;
+11. se o código não fará lematização, stemming ou remoção de stopwords;
+12. se o código não fará nenhuma alteração semântica no corpus.
+
+---
+
+# 21. Arquitetura metodológica desejada
+
+Quero separar claramente três etapas:
+
+### Etapa A: corpus original
+
+Arquivo/base original, intocado.
+
+### Etapa B: corpus tecnicamente limpo
+
+Arquivo produzido pelo código, contendo o mesmo conteúdo discursivo, mas sem ruídos técnicos e de formatação.
+
+### Etapa C: corpus preparado para IRaMuTeQ
+
+Posteriormente será criada a versão final com os metadados exigidos pelo IRaMuTeQ.
+
+NÃO quero que você misture necessariamente a etapa B com a etapa C.
+
+A limpeza técnica deve acontecer primeiro.
+
+---
+
+# 22. Princípio final
+
+O objetivo NÃO é produzir um texto "bonito".
+
+O objetivo é produzir um corpus **estatisticamente analisável e metodologicamente fiel ao material empírico original**.
+
+Portanto, sempre prefira:
+
+**preservar informação > corrigir aparência.**
+
+Se houver dúvida sobre determinada transformação, não faça uma alteração agressiva. É melhor preservar o elemento e sinalizá-lo no relatório para revisão manual.
+
+---
+
+## O que quero que você me entregue
+
+1. O código completo para Google Colab.
+2. O código dividido em células.
+3. Uma explicação breve do que cada célula faz.
+4. O sistema de upload do `.txt`.
+5. O arquivo `.txt` limpo como saída.
+6. Um relatório de auditoria da limpeza.
+7. Uma verificação final mostrando que `ç`, acentos e demais caracteres portugueses foram preservados.
+8. Uma seção explicando possíveis riscos metodológicos do código.
+9. Não faça nenhuma alteração semântica no corpus.
+10. Se houver alguma ambiguidade no formato do `.txt`, **não invente uma solução**. Primeiro explique qual informação sobre a estrutura do arquivo é necessária para tornar o código seguro.
